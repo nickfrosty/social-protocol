@@ -115,7 +115,36 @@ describe("profile", () => {
   });
 
   //
-  it("update profile", async () => {
+  it("update profile: incorrect authority", async () => {
+    //
+    const newProfileData: anchor.IdlAccounts<Social>["profile"] = {
+      bump: null,
+      randomSeed: random_seed_profile as unknown as number[],
+      authority: payer.publicKey,
+      username: "does not change",
+      name: "new name",
+      imageUri: "new imageUri",
+      metadataUri: "new metadataUri",
+    };
+
+    const wrongAuthority = anchor.web3.Keypair.generate();
+
+    await expect(
+      program.methods
+        .updateProfile(newProfileData)
+        .accounts({
+          authority: wrongAuthority.publicKey,
+          profile: profilePda,
+        })
+        .signers([wrongAuthority])
+        .rpc(),
+    ).to.eventually.be.rejectedWith(
+      "AnchorError caused by account: profile. Error Code: Unauthorized. Error Number: 6001. Error Message: Unauthorized access.",
+    );
+  });
+
+  //
+  it("update profile: correct authority", async () => {
     //
     const newProfileData: anchor.IdlAccounts<Social>["profile"] = {
       bump: null,

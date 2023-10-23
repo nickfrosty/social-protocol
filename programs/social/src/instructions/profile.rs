@@ -87,6 +87,7 @@ pub struct UpdateProfile<'info>{
             input.random_seed.as_ref()
         ],
         bump = profile.bump,
+        has_one = authority @ GenericError::Unauthorized,
     )]
     pub profile: Account<'info, Profile>,
 }
@@ -95,9 +96,6 @@ pub fn process_update_profile(ctx: Context<UpdateProfile>, input: Profile) -> Re
     Profile::validate_input(&input)?;
 
     let profile = &mut ctx.accounts.profile;
-
-    // perform security checks
-    require_keys_eq!(profile.authority.key(), ctx.accounts.authority.key(), GenericError::Unauthorized);
 
     // update the desired profile details
     profile.name = input.name;
@@ -173,8 +171,3 @@ pub fn process_change_username(ctx: Context<ChangeUsername>, _profile_seed: [u8;
 
     Ok(())
 }
-
-
-// todo: the following methods are yet to be implemented
-// - change owner
-// 
