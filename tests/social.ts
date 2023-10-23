@@ -189,8 +189,7 @@ describe("profile", () => {
 
   //
   it("change username: correct authority", async () => {
-    // note the old and new usernames
-    const old_username = profileData.username;
+    // set a new usernames
     const new_username = "brand_new_not_taken";
 
     // derive the profile's name service account from the profile's username
@@ -198,7 +197,7 @@ describe("profile", () => {
       [
         Buffer.from("name_service", "utf8"),
         Buffer.from("profile", "utf8"),
-        Buffer.from(old_username, "utf8"),
+        Buffer.from(profileData.username, "utf8"),
       ],
       program.programId,
     );
