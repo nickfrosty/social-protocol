@@ -47,6 +47,7 @@ pub fn process_create_profile(ctx: Context<CreateProfile>, input: Profile) -> Re
         bump: ctx.bumps.name_service,
         // store the profile's address for easy retrieval by anyone
         address: ctx.accounts.profile.key(),
+        // make the name service's authority the same as the profile
         authority: ctx.accounts.authority.key()
     });
     

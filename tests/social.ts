@@ -78,15 +78,16 @@ describe("profile", () => {
     // get the profile record from the chain
     const profile = await program.account.profile.fetch(profilePda);
 
-    // perform the assertions
-    assert(profile.username === profileData.username, "Expected 'username' to match");
-    assert(profile.name === profileData.name, "Expected 'name' to match");
-    assert(profile.metadataUri === profileData.metadataUri, "Expected 'metadataUri' to match");
-    assert(profile.imageUri === profileData.imageUri, "Expected 'imageUri' to match");
+    // perform the assertions on the profile
+    expect(profile.authority === payer.publicKey, "Expected the payer to be profile's authority");
+    expect(profile.username === profileData.username, "Expected 'username' to match");
+    expect(profile.name === profileData.name, "Expected 'name' to match");
+    expect(profile.metadataUri === profileData.metadataUri, "Expected 'metadataUri' to match");
+    expect(profile.imageUri === profileData.imageUri, "Expected 'imageUri' to match");
   });
 
   //
-  it("profile name service created", async () => {
+  it("profile's name service created", async () => {
     // derive the profile's name service account from the profile's username
     const [nameServicePda] = anchor.web3.PublicKey.findProgramAddressSync(
       [
@@ -101,16 +102,16 @@ describe("profile", () => {
 
     const name_service = await program.account.nameService.fetch(nameServicePda);
 
-    assert(
+    expect(
       name_service.address.toBase58() === profilePda.toBase58(),
       "Expected 'address' to be the profile pda",
     );
 
     // get the profile from the name service
     const profile = await program.account.profile.fetch(name_service.address);
-    assert(
+    expect(
       name_service.authority.toBase58() === profile.authority.toBase58(),
-      "Expected 'authority' to be the profile's owner",
+      "Expected 'authority' to match the profile's authority",
     );
   });
 
