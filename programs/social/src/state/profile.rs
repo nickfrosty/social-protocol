@@ -12,7 +12,7 @@ pub struct Profile {
     pub random_seed: [u8; 32],
 
     /// owner with blanket authority over the Profile
-    pub owner: Pubkey,
+    pub authority: Pubkey,
 
     /// display name to be used for the Profile
     pub username: String,

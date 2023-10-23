@@ -39,8 +39,9 @@ const [replyPda] = anchor.web3.PublicKey.findProgramAddressSync(
 describe("profile", () => {
   //
   const profileData: anchor.IdlAccounts<Social>["profile"] = {
+    bump: 0, // this is ignored
     randomSeed: random_seed_profile as unknown as number[],
-    owner: payer.publicKey,
+    authority: payer.publicKey,
     name: "name_default",
     username: "username_default",
     imageUri: "imageUri_default",
@@ -64,7 +65,7 @@ describe("profile", () => {
       .createProfile(profileData)
       .accounts({
         // payer: payer.publicKey,
-        owner: payer.publicKey,
+        authority: payer.publicKey,
         profile: profilePda,
         nameService: nameServicePda,
       })
@@ -104,7 +105,7 @@ describe("profile", () => {
     // get the profile from the name service
     const profile = await program.account.profile.fetch(name_service.address);
     assert(
-      name_service.authority.toBase58() === profile.owner.toBase58(),
+      name_service.authority.toBase58() === profile.authority.toBase58(),
       "Expected 'authority' to be the profile's owner",
     );
   });
@@ -113,8 +114,9 @@ describe("profile", () => {
   it("update profile", async () => {
     //
     const newProfileData: anchor.IdlAccounts<Social>["profile"] = {
+      bump: null,
       randomSeed: random_seed_profile as unknown as number[],
-      owner: payer.publicKey,
+      authority: payer.publicKey,
       username: "does not change",
       name: "new name",
       imageUri: "new imageUri",

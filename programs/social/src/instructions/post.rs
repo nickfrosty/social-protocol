@@ -183,7 +183,7 @@ pub fn process_update_post(
 
     // only allow the owner of the author's profile to update the post
     require_keys_eq!(
-        ctx.accounts.author.owner.key(),
+        ctx.accounts.author.authority.key(),
         ctx.accounts.authority.key(),
         GenericError::Unauthorized
     );

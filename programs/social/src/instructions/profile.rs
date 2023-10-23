@@ -11,7 +11,7 @@ pub struct CreateProfile<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    pub owner: Signer<'info>,
+    pub authority: Signer<'info>,
 
     #[account(
         init, 
@@ -48,13 +48,13 @@ pub fn process_create_profile(ctx: Context<CreateProfile>, input: Profile) -> Re
     ctx.accounts.name_service.set_inner(NameService { 
         bump: ctx.bumps.name_service,
         address: ctx.accounts.profile.key(),
-        authority: ctx.accounts.owner.key()
+        authority: ctx.accounts.authority.key()
     });
     
     // store the provided input data into the account
     ctx.accounts.profile.set_inner(Profile {
         bump: ctx.bumps.profile,
-        owner: *ctx.accounts.owner.key,
+        authority: *ctx.accounts.authority.key,
         random_seed: input.random_seed,
         name: input.name,
         username: input.username,
@@ -97,7 +97,7 @@ pub fn process_update_profile(ctx: Context<UpdateProfile>, input: Profile) -> Re
     let profile = &mut ctx.accounts.profile;
 
     // perform security checks
-    require_keys_eq!(profile.owner.key(), ctx.accounts.authority.key(), GenericError::Unauthorized);
+    require_keys_eq!(profile.authority.key(), ctx.accounts.authority.key(), GenericError::Unauthorized);
 
     // update the desired profile details
     profile.name = input.name;
@@ -161,7 +161,7 @@ pub fn process_change_username(ctx: Context<ChangeUsername>, _profile_seed: [u8;
 
     // validate the permissions on the profile and old name service
     require_keys_eq!(
-        ctx.accounts.profile.owner.key(), ctx.accounts.authority.key(),
+        ctx.accounts.profile.authority.key(), ctx.accounts.authority.key(),
         GenericError::Unauthorized
     );
 
@@ -169,7 +169,7 @@ pub fn process_change_username(ctx: Context<ChangeUsername>, _profile_seed: [u8;
     ctx.accounts.new_name_service.set_inner(NameService {
         bump: ctx.bumps.new_name_service,
         address: ctx.accounts.profile.key(),
-        authority: ctx.accounts.profile.owner.key()
+        authority: ctx.accounts.profile.authority.key()
     });
 
     // emit an event for indexers to observe
