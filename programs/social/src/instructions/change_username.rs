@@ -31,6 +31,7 @@ pub struct ChangeUsername<'info> {
         seeds = [
             NameService::PREFIX_SEED.as_ref(),
             Profile::PREFIX_SEED.as_ref(),
+            // use the new username to derive the new name service account
             new_username.as_ref()
         ],
         bump,
@@ -39,10 +40,13 @@ pub struct ChangeUsername<'info> {
 
     #[account(
         mut,
+        // when closing the old name service, send the lamports to the new name service
+        // this makes changing usernames a negligible cost
         close = new_name_service,
         seeds = [
             NameService::PREFIX_SEED.as_ref(),
             Profile::PREFIX_SEED.as_ref(),
+            // use the current username to derive the old name service address
             profile.username.as_ref()
         ],
         bump = old_name_service.bump,
