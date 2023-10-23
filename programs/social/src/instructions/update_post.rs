@@ -13,7 +13,10 @@ pub struct UpdatePost<'info> {
 
     pub authority: Signer<'info>,
 
-    #[account()]
+    #[account(
+        // ensure the author approved approved this action 
+        has_one = authority @ GenericError::Unauthorized
+    )]
     pub author: Account<'info, Profile>,
 
     #[account(
@@ -23,6 +26,8 @@ pub struct UpdatePost<'info> {
             random_seed.as_ref()
         ],
         bump = post.bump,
+        // ensure the provided author owns this Post
+        has_one = author,
     )]
     pub post: Account<'info, Post>,
 }
@@ -34,28 +39,8 @@ pub fn process_update_post(
 ) -> Result<()> {
     Post::validate_uri(&metadata_uri)?;
 
-    // perform the security checks
-    // todo: ensure the `parent_post` is owned by our program
-    // todo: ensure the `author` is owned by our program? should they be a `Profile`?
-
-    let post = &mut ctx.accounts.post;
-
-    // ensure the correct `author` was provided
-    require_keys_eq!(
-        post.author.key(),
-        ctx.accounts.author.key(),
-        GenericError::InvalidAccount
-    );
-
-    // only allow the owner of the author's profile to update the post
-    require_keys_eq!(
-        ctx.accounts.author.authority.key(),
-        ctx.accounts.authority.key(),
-        GenericError::Unauthorized
-    );
-
     // only update the desired data
-    post.metadata_uri = metadata_uri;
+    ctx.accounts.post.metadata_uri = metadata_uri;
 
     // emit an event for indexers to observe
     // todo
