@@ -79,11 +79,14 @@ describe("profile", () => {
     const profile = await program.account.profile.fetch(profilePda);
 
     // perform the assertions on the profile
-    expect(profile.authority === payer.publicKey, "Expected the payer to be profile's authority");
-    expect(profile.username === profileData.username, "Expected 'username' to match");
-    expect(profile.name === profileData.name, "Expected 'name' to match");
-    expect(profile.metadataUri === profileData.metadataUri, "Expected 'metadataUri' to match");
-    expect(profile.imageUri === profileData.imageUri, "Expected 'imageUri' to match");
+    assert(
+      profile.authority.toBase58() === payer.publicKey.toBase58(),
+      "Expected the payer to be profile's authority",
+    );
+    assert(profile.username === profileData.username, "Expected 'username' to match");
+    assert(profile.name === profileData.name, "Expected 'name' to match");
+    assert(profile.metadataUri === profileData.metadataUri, "Expected 'metadataUri' to match");
+    assert(profile.imageUri === profileData.imageUri, "Expected 'imageUri' to match");
   });
 
   //
@@ -100,18 +103,18 @@ describe("profile", () => {
 
     console.log("\t", "name service address:", nameServicePda.toBase58());
 
+    // get the name service and profile from the blockchain
     const name_service = await program.account.nameService.fetch(nameServicePda);
+    const profile = await program.account.profile.fetch(name_service.address);
 
-    expect(
+    assert(
       name_service.address.toBase58() === profilePda.toBase58(),
       "Expected 'address' to be the profile pda",
     );
 
-    // get the profile from the name service
-    const profile = await program.account.profile.fetch(name_service.address);
-    expect(
-      name_service.authority.toBase58() === profile.authority.toBase58(),
-      "Expected 'authority' to match the profile's authority",
+    assert(
+      name_service.authority.toBase58() === profilePda.toBase58(),
+      "Expected 'authority' to to be the profile pda",
     );
   });
 
@@ -259,7 +262,7 @@ describe("profile", () => {
     const new_name_service = await program.account.nameService.fetch(newNameServicePda);
 
     // ensure the new name service has the correct data
-    expect(
+    assert(
       new_name_service.address.toBase58() === profilePda.toBase58(),
       "Expected 'address' to be the profile pda",
     );
