@@ -2,12 +2,14 @@ use anchor_lang::prelude::*;
 
 #[account]
 pub struct NameService {
+    /// bump used to derive the PDA
+    pub bump: u8,
+
     /// account address this name service account points too
     pub address: Pubkey,
 
     /// the account that has the ability to change the the details of this NameService
     pub authority: Pubkey,
-    // pub seeds;
 }
 
 impl NameService {

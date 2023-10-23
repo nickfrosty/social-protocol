@@ -5,11 +5,14 @@ use crate::errors::GenericError;
 #[account]
 #[derive(Default)]
 pub struct Profile {
-    /// owner with blanket authority over the Profile
-    pub owner: Pubkey,
+    /// bump used to derive the PDA
+    pub bump: u8,
 
     /// random seed bytes used to derive the PDA for the Profile's account
     pub random_seed: [u8; 32],
+
+    /// owner with blanket authority over the Profile
+    pub owner: Pubkey,
 
     /// display name to be used for the Profile
     pub username: String,

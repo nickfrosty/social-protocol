@@ -5,6 +5,9 @@ use crate::errors::GenericError;
 #[account]
 #[derive(Default)]
 pub struct Post {
+    /// bump used to derive the PDA
+    pub bump: u8,
+
     /// random seed bytes used to derive the PDA for the Post's account
     pub random_seed: [u8; 32],
 

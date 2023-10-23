@@ -16,7 +16,7 @@ pub struct CreatePost<'info> {
             Profile::PREFIX_SEED.as_ref(),
             author.random_seed.as_ref()
         ],
-        bump
+        bump = author.bump,
     )]
     pub author: Account<'info, Profile>,
 
@@ -49,6 +49,7 @@ pub fn process_create_post(
 
     // store the provided data in the account
     post.set_inner(Post {
+        bump: ctx.bumps.post,
         random_seed,
         metadata_uri,
         author: ctx.accounts.author.key(),
@@ -76,7 +77,7 @@ pub struct CreateReply<'info> {
             Profile::PREFIX_SEED.as_ref(),
             author.random_seed.as_ref()
         ],
-        bump
+        bump = author.bump,
     )]
     pub author: Account<'info, Profile>,
 
@@ -86,7 +87,7 @@ pub struct CreateReply<'info> {
             Post::PREFIX_SEED.as_ref(),
             parent_post.random_seed.as_ref()
         ],
-        bump,
+        bump = parent_post.bump,
     )]
     pub parent_post: Account<'info, Post>,
 
@@ -119,6 +120,7 @@ pub fn process_create_reply(
 
     // store the provided data in the account
     reply.set_inner(Post {
+        bump: ctx.bumps.reply,
         random_seed,
         metadata_uri: metadata_uri,
         author: ctx.accounts.author.key(),
@@ -154,7 +156,7 @@ pub struct UpdatePost<'info> {
             Post::PREFIX_SEED.as_ref(),
             random_seed.as_ref()
         ],
-        bump,
+        bump = post.bump,
     )]
     pub post: Account<'info, Post>,
 }

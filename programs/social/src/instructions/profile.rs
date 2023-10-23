@@ -46,12 +46,14 @@ pub fn process_create_profile(ctx: Context<CreateProfile>, input: Profile) -> Re
     
     // store the new name service's account data 
     ctx.accounts.name_service.set_inner(NameService { 
+        bump: ctx.bumps.name_service,
         address: ctx.accounts.profile.key(),
         authority: ctx.accounts.owner.key()
     });
     
     // store the provided input data into the account
     ctx.accounts.profile.set_inner(Profile {
+        bump: ctx.bumps.profile,
         owner: *ctx.accounts.owner.key,
         random_seed: input.random_seed,
         name: input.name,
@@ -84,7 +86,7 @@ pub struct UpdateProfile<'info>{
             Profile::PREFIX_SEED.as_ref(),
             input.random_seed.as_ref()
         ],
-        bump,
+        bump = profile.bump,
     )]
     pub profile: Account<'info, Profile>,
 }
@@ -123,7 +125,7 @@ pub struct ChangeUsername<'info> {
             Profile::PREFIX_SEED.as_ref(),
             profile_seed.as_ref()
         ],
-        bump
+        bump = profile.bump,
     )]
     pub profile: Account<'info, Profile>,
 
@@ -148,7 +150,7 @@ pub struct ChangeUsername<'info> {
             b"profile".as_ref(),
             profile.username.as_ref()
         ],
-        bump
+        bump = old_name_service.bump
     )]
     pub old_name_service: Account<'info, NameService>,
 }
@@ -164,7 +166,8 @@ pub fn process_change_username(ctx: Context<ChangeUsername>, _profile_seed: [u8;
     );
 
     // store the new name service's account data 
-    ctx.accounts.new_name_service.set_inner(NameService { 
+    ctx.accounts.new_name_service.set_inner(NameService {
+        bump: ctx.bumps.new_name_service,
         address: ctx.accounts.profile.key(),
         authority: ctx.accounts.profile.owner.key()
     });
