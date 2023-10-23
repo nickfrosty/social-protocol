@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-// use crate::errors::GenericError;
+use crate::errors::GenericError;
 use crate::state::{Post, Profile};
 
 #[derive(Accounts)]
@@ -10,6 +10,8 @@ pub struct CreatePost<'info> {
 
     #[account(mut)]
     pub payer: Signer<'info>,
+    
+    pub authority: Signer<'info>,
 
     #[account(
         seeds = [
@@ -17,6 +19,9 @@ pub struct CreatePost<'info> {
             author.random_seed.as_ref()
         ],
         bump = author.bump,
+        
+        // ensure the author is actually approving this
+        constraint = author.authority == authority.key() @ GenericError::Unauthorized
     )]
     pub author: Account<'info, Profile>,
 
@@ -40,9 +45,6 @@ pub fn process_create_post(
     metadata_uri: String,
 ) -> Result<()> {
     // validate the input
-    // todo
-
-    // perform the security checks
     // todo
 
     let post = &mut ctx.accounts.post;

@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-// use crate::errors::GenericError;
+use crate::errors::GenericError;
 use crate::state::{Post, Profile};
 
 #[derive(Accounts)]
@@ -11,12 +11,16 @@ pub struct CreateReply<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
+    pub authority: Signer<'info>,
+
     #[account(
         seeds = [
             Profile::PREFIX_SEED.as_ref(),
             author.random_seed.as_ref()
         ],
         bump = author.bump,
+        // ensure the author is actually approving this
+        constraint = author.authority == authority.key() @ GenericError::Unauthorized
     )]
     pub author: Account<'info, Profile>,
 
@@ -50,9 +54,6 @@ pub fn process_create_reply(
     metadata_uri: String,
 ) -> Result<()> {
     // validate the input
-    // todo
-
-    // perform the security checks
     // todo
 
     let reply = &mut ctx.accounts.reply;
