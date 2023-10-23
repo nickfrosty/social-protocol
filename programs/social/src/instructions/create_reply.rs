@@ -11,6 +11,7 @@ pub struct CreateReply<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
+    /// the reply author's authority
     pub authority: Signer<'info>,
 
     #[account(
@@ -19,8 +20,9 @@ pub struct CreateReply<'info> {
             author.random_seed.as_ref()
         ],
         bump = author.bump,
-        // ensure the author is actually approving this
-        constraint = author.authority == authority.key() @ GenericError::Unauthorized
+
+        // ensure the reply author is actually approving this
+        has_one = authority @ GenericError::Unauthorized
     )]
     pub author: Account<'info, Profile>,
 
@@ -56,6 +58,9 @@ pub fn process_create_reply(
     // validate the input
     Post::validate_uri(&metadata_uri)?;
 
+    // todo: ensure a parent post was actually provided since we are creating a reply
+    // if no parent post was provided, this should error
+
     // actually store the provided data in the account
     ctx.accounts.reply.set_inner(Post {
         bump: ctx.bumps.reply,
@@ -68,6 +73,7 @@ pub fn process_create_reply(
 
     // increment the parent post's `reply_counter`
     ctx.accounts.parent_post.reply_count += 1;
+    // todo: safe math
 
     // emit an event for indexers to observe
     // todo

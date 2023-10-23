@@ -11,10 +11,11 @@ pub struct UpdatePost<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
+    /// the post author's authority
     pub authority: Signer<'info>,
 
     #[account(
-        // ensure the author approved approved this action 
+        // ensure the author is actually approving this
         has_one = authority @ GenericError::Unauthorized
     )]
     pub author: Account<'info, Profile>,

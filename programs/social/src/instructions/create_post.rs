@@ -11,6 +11,7 @@ pub struct CreatePost<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     
+    /// the author's authority
     pub authority: Signer<'info>,
 
     #[account(
@@ -20,8 +21,8 @@ pub struct CreatePost<'info> {
         ],
         bump = author.bump,
         
-        // ensure the author is actually approving this
-        constraint = author.authority == authority.key() @ GenericError::Unauthorized
+        // ensure the post author is actually approving this
+        has_one = authority @ GenericError::Unauthorized
     )]
     pub author: Account<'info, Profile>,
 
@@ -53,9 +54,10 @@ pub fn process_create_post(
         random_seed,
         metadata_uri,
         author: ctx.accounts.author.key(),
-        // note: these should always be set to empty values when creating a root Post
-        parent_post: None,
+        // no replies to start :)
         reply_count: 0,
+        // parent post is set to None when creating root a Post
+        parent_post: None,
     });
 
     // emit an event for indexers to observe
