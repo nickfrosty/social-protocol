@@ -19,6 +19,7 @@ pub struct ChangeUsername<'info> {
             profile_seed.as_ref()
         ],
         bump = profile.bump,
+        // ensure the profile's authority is actually approving this
         has_one = authority @ GenericError::Unauthorized,
     )]
     pub profile: Account<'info, Profile>,
@@ -29,7 +30,7 @@ pub struct ChangeUsername<'info> {
         space = NameService::SPACE,
         seeds = [
             NameService::PREFIX_SEED.as_ref(),
-            b"profile".as_ref(),
+            Profile::PREFIX_SEED.as_ref(),
             new_username.as_ref()
         ],
         bump,
@@ -41,10 +42,11 @@ pub struct ChangeUsername<'info> {
         close = new_name_service,
         seeds = [
             NameService::PREFIX_SEED.as_ref(),
-            b"profile".as_ref(),
+            Profile::PREFIX_SEED.as_ref(),
             profile.username.as_ref()
         ],
         bump = old_name_service.bump,
+        // ensure the profile's authority is actually approving this
         has_one = authority @ GenericError::Unauthorized,
     )]
     pub old_name_service: Account<'info, NameService>,
