@@ -1,7 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
 import type { Program } from "@coral-xyz/anchor";
 import type { Social } from "../target/types/social";
-import { assert, expect } from "chai";
+
+import chai, { expect, assert } from "chai";
+import chaiAsPromised from "chai-as-promised";
+
+chai.use(chaiAsPromised);
 
 // Configure the client to use the local cluster.
 const provider = anchor.AnchorProvider.env();
@@ -168,9 +172,8 @@ describe("profile", () => {
 
     const wrongAuthority = anchor.web3.Keypair.generate();
 
-    // ensure the old name service account was closed
-    try {
-      await program.methods
+    await expect(
+      program.methods
         .changeUsername(random_seed_profile as unknown as number[], new_username)
         .accounts({
           // note: when not provided, Anchor should auto-magically set this to the fee payer
@@ -180,11 +183,10 @@ describe("profile", () => {
           newNameService: newNameServicePda,
         })
         .signers([wrongAuthority])
-        .rpc();
-    } catch (err) {
-      expect(err).to.be.an("Error");
-      expect(err.message).to.contain(`Unauthorized`);
-    }
+        .rpc(),
+    ).to.eventually.be.rejectedWith(
+      "AnchorError caused by account: profile. Error Code: Unauthorized. Error Number: 6001. Error Message: Unauthorized access.",
+    );
   });
 
   //
@@ -227,18 +229,15 @@ describe("profile", () => {
     const new_name_service = await program.account.nameService.fetch(newNameServicePda);
 
     // ensure the new name service has the correct data
-    assert(
+    expect(
       new_name_service.address.toBase58() === profilePda.toBase58(),
       "Expected 'address' to be the profile pda",
     );
 
     // ensure the old name service account was closed
-    try {
-      await program.account.nameService.fetch(oldNameServicePda);
-    } catch (err) {
-      expect(err).to.be.an("Error");
-      expect(err.message).to.contain(`Account does not exist or has no data`);
-    }
+    await expect(
+      program.account.nameService.fetch(oldNameServicePda),
+    ).to.eventually.be.rejectedWith("Account does not exist or has no data");
   });
 });
 

@@ -126,6 +126,7 @@ pub struct ChangeUsername<'info> {
             profile_seed.as_ref()
         ],
         bump = profile.bump,
+        has_one = authority @ GenericError::Unauthorized,
     )]
     pub profile: Account<'info, Profile>,
 
@@ -138,7 +139,7 @@ pub struct ChangeUsername<'info> {
             b"profile".as_ref(),
             new_username.as_ref()
         ],
-        bump
+        bump,
     )]
     pub new_name_service: Account<'info, NameService>,
 
@@ -150,7 +151,8 @@ pub struct ChangeUsername<'info> {
             b"profile".as_ref(),
             profile.username.as_ref()
         ],
-        bump = old_name_service.bump
+        bump = old_name_service.bump,
+        has_one = authority @ GenericError::Unauthorized,
     )]
     pub old_name_service: Account<'info, NameService>,
 }
@@ -158,12 +160,6 @@ pub struct ChangeUsername<'info> {
 ///
 pub fn process_change_username(ctx: Context<ChangeUsername>, _profile_seed: [u8; 32], new_username: String) -> Result<()> {
     Profile::validate_username(&new_username)?;
-
-    // validate the permissions on the profile and old name service
-    require_keys_eq!(
-        ctx.accounts.profile.authority.key(), ctx.accounts.authority.key(),
-        GenericError::Unauthorized
-    );
 
     // store the new name service's account data 
     ctx.accounts.new_name_service.set_inner(NameService {
