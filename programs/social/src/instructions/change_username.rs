@@ -11,6 +11,7 @@ pub struct ChangeUsername<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
+    /// the `profile.authority` that will be used to verify ownership
     pub authority: Signer<'info>,
 
     #[account(
@@ -50,8 +51,8 @@ pub struct ChangeUsername<'info> {
             profile.username.as_ref()
         ],
         bump = old_name_service.bump,
-        // ensure the profile's authority is actually approving this
-        has_one = authority @ GenericError::Unauthorized,
+        // ensure the name service is owned by the profile's PDA
+        constraint = old_name_service.authority.key() == profile.key() @ GenericError::Unauthorized,
     )]
     pub old_name_service: Account<'info, NameService>,
 }
@@ -63,8 +64,11 @@ pub fn process_change_username(ctx: Context<ChangeUsername>, _profile_seed: [u8;
     // store the new name service's account data 
     ctx.accounts.new_name_service.set_inner(NameService {
         bump: ctx.bumps.new_name_service,
+        // store the profile's address for easy retrieval by anyone
         address: ctx.accounts.profile.key(),
-        authority: ctx.accounts.profile.authority.key()
+        // the profile PDA is set as the authority so that when the `profile.authority` changes, 
+        // the same profile will still be able to update the inner data of this account
+        authority: ctx.accounts.profile.key()
     });
 
     // emit an event for indexers to observe

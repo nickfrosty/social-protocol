@@ -11,7 +11,7 @@ pub struct UpdateProfile<'info> {
     #[account(mut)]
     payer: Signer<'info>,
 
-    // #[account(mut)]
+    /// the `profile.authority` that will be used to verify ownership
     authority: Signer<'info>,
 
     #[account(
@@ -21,6 +21,8 @@ pub struct UpdateProfile<'info> {
             input.random_seed.as_ref()
         ],
         bump = profile.bump,
+
+        // ensure the profile's authority is actually approving this
         has_one = authority @ GenericError::Unauthorized,
     )]
     pub profile: Account<'info, Profile>,

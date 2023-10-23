@@ -47,8 +47,9 @@ pub fn process_create_profile(ctx: Context<CreateProfile>, input: Profile) -> Re
         bump: ctx.bumps.name_service,
         // store the profile's address for easy retrieval by anyone
         address: ctx.accounts.profile.key(),
-        // make the name service's authority the same as the profile
-        authority: ctx.accounts.authority.key()
+        // the profile PDA is set as the authority so that when the `profile.authority` changes, 
+        // the same profile will still be able to update the inner data of this account
+        authority: ctx.accounts.profile.key()
     });
     
     // store the provided input data into the account
@@ -59,7 +60,8 @@ pub fn process_create_profile(ctx: Context<CreateProfile>, input: Profile) -> Re
         username: input.username,
         metadata_uri : input.metadata_uri,
         image_uri: input.image_uri,
-        // use the authority provided since it is already a signer
+        // set the profile's authority to be the provided `authority` 
+        // since it is already a signer on the transaction
         authority: ctx.accounts.authority.key(),
     });
 
