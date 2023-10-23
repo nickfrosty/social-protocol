@@ -45,12 +45,10 @@ pub fn process_create_post(
     metadata_uri: String,
 ) -> Result<()> {
     // validate the input
-    // todo
+    Post::validate_uri(&metadata_uri)?;
 
-    let post = &mut ctx.accounts.post;
-
-    // store the provided data in the account
-    post.set_inner(Post {
+    // actually store the provided data in the account
+    ctx.accounts.post.set_inner(Post {
         bump: ctx.bumps.post,
         random_seed,
         metadata_uri,

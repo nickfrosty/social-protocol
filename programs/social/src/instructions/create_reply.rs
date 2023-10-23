@@ -54,12 +54,10 @@ pub fn process_create_reply(
     metadata_uri: String,
 ) -> Result<()> {
     // validate the input
-    // todo
+    Post::validate_uri(&metadata_uri)?;
 
-    let reply = &mut ctx.accounts.reply;
-
-    // store the provided data in the account
-    reply.set_inner(Post {
+    // actually store the provided data in the account
+    ctx.accounts.reply.set_inner(Post {
         bump: ctx.bumps.reply,
         random_seed,
         metadata_uri: metadata_uri,
