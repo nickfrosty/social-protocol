@@ -35,7 +35,9 @@ impl Profile {
     pub const SPACE: usize =
         // anchor descriminator + all static variables
         8 + std::mem::size_of::<Self>() + 
-        // string name
+        // string `username`
+        MAX_LEN_USERNAME + 
+        // string `name`
         MAX_LEN_NAME + 
         // string `image_uri`
         MAX_LEN_URI + 
@@ -45,7 +47,6 @@ impl Profile {
     /// validate the standard generic input
     pub fn validate_input(input: &Profile) -> Result<()>{
         require!(input.name.len() <= MAX_LEN_NAME, GenericError::NameTooLong);
-        require!(input.username.len() <= MAX_LEN_USERNAME, GenericError::NameTooLong);
         require!(input.metadata_uri.len() <= MAX_LEN_URI, GenericError::UriTooLong);
         require!(input.image_uri.len() <= MAX_LEN_URI, GenericError::UriTooLong);
     
@@ -55,8 +56,9 @@ impl Profile {
     }
     
     /// validate the standard generic input
-    pub fn validate_username(_username: &String) -> Result<()>{
-    
+    pub fn validate_username(username: &String) -> Result<()>{
+        require!(username.len() <= MAX_LEN_USERNAME, GenericError::NameTooLong);
+        
         // todo: validate username for a set character set [a-z0-9_-]
 
         Ok(())
