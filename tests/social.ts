@@ -4,6 +4,11 @@ import type { Social } from "../target/types/social";
 
 import chai, { expect, assert } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import {
+  deriveNameServiceAddress,
+  derivePostAddress,
+  deriveProfileAddress,
+} from "../client/accounts";
 
 chai.use(chaiAsPromised);
 
@@ -20,25 +25,12 @@ const random_seed_post = anchor.web3.Keypair.generate().publicKey.toBytes();
 const random_seed_reply = anchor.web3.Keypair.generate().publicKey.toBytes();
 
 // derive the pda address based on the random
-const [profilePda] = anchor.web3.PublicKey.findProgramAddressSync(
-  [Buffer.from("profile"), random_seed_profile],
-  program.programId,
-);
-
-const [profilePda2] = anchor.web3.PublicKey.findProgramAddressSync(
-  [Buffer.from("profile"), random_seed_profile2],
-  program.programId,
-);
+const [profilePda] = deriveProfileAddress(random_seed_profile);
+const [profilePda2] = deriveProfileAddress(random_seed_profile2);
 
 // derive the pda address based on the random
-const [postPda] = anchor.web3.PublicKey.findProgramAddressSync(
-  [Buffer.from("post"), random_seed_post],
-  program.programId,
-);
-const [replyPda] = anchor.web3.PublicKey.findProgramAddressSync(
-  [Buffer.from("post"), random_seed_reply],
-  program.programId,
-);
+const [postPda] = derivePostAddress(random_seed_post);
+const [replyPda] = derivePostAddress(random_seed_reply);
 
 describe("profile", () => {
   //
@@ -56,14 +48,7 @@ describe("profile", () => {
   it("create profile", async () => {
     console.log("\t", "profile address:", profilePda.toBase58());
 
-    const [nameServicePda] = anchor.web3.PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("name_service", "utf8"),
-        Buffer.from("profile", "utf8"),
-        Buffer.from(profileData.username, "utf8"),
-      ],
-      program.programId,
-    );
+    const [nameServicePda] = deriveNameServiceAddress("profile", profileData.username);
 
     await program.methods
       .createProfile(profileData)
@@ -92,14 +77,7 @@ describe("profile", () => {
   //
   it("profile's name service created", async () => {
     // derive the profile's name service account from the profile's username
-    const [nameServicePda] = anchor.web3.PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("name_service", "utf8"),
-        Buffer.from("profile", "utf8"),
-        Buffer.from(profileData.username, "utf8"),
-      ],
-      program.programId,
-    );
+    const [nameServicePda] = deriveNameServiceAddress("profile", profileData.username);
 
     console.log("\t", "name service address:", nameServicePda.toBase58());
 
@@ -185,23 +163,8 @@ describe("profile", () => {
     const new_username = "brand_new_not_taken";
 
     // derive the profile's name service account from the profile's username
-    const [oldNameServicePda] = anchor.web3.PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("name_service", "utf8"),
-        Buffer.from("profile", "utf8"),
-        Buffer.from(profileData.username, "utf8"),
-      ],
-      program.programId,
-    );
-
-    const [newNameServicePda] = anchor.web3.PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("name_service", "utf8"),
-        Buffer.from("profile", "utf8"),
-        Buffer.from(new_username, "utf8"),
-      ],
-      program.programId,
-    );
+    const [oldNameServicePda] = deriveNameServiceAddress("profile", profileData.username);
+    const [newNameServicePda] = deriveNameServiceAddress("profile", new_username);
 
     const wrongAuthority = anchor.web3.Keypair.generate();
 
@@ -228,23 +191,10 @@ describe("profile", () => {
     const new_username = "brand_new_not_taken";
 
     // derive the profile's name service account from the profile's username
-    const [oldNameServicePda] = anchor.web3.PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("name_service", "utf8"),
-        Buffer.from("profile", "utf8"),
-        Buffer.from(profileData.username, "utf8"),
-      ],
-      program.programId,
-    );
 
-    const [newNameServicePda] = anchor.web3.PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("name_service", "utf8"),
-        Buffer.from("profile", "utf8"),
-        Buffer.from(new_username, "utf8"),
-      ],
-      program.programId,
-    );
+    const [oldNameServicePda] = deriveNameServiceAddress("profile", profileData.username);
+    const [newNameServicePda] = deriveNameServiceAddress("profile", new_username);
+
     console.log("\t", "new name service address:", newNameServicePda.toBase58());
 
     await program.methods
