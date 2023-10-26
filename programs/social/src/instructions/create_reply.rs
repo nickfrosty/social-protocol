@@ -30,7 +30,8 @@ pub struct CreateReply<'info> {
         mut,
         seeds = [
             Post::PREFIX_SEED.as_ref(),
-            parent_post.random_seed.as_ref()
+            parent_post.group.key().as_ref(),
+            parent_post.post_id.to_string().as_bytes(),
         ],
         bump = parent_post.bump,
     )]
@@ -42,7 +43,10 @@ pub struct CreateReply<'info> {
         space=Post::SPACE,
         seeds = [
             Post::PREFIX_SEED.as_ref(),
-            random_seed.as_ref()
+            // the parent post is used as the group for its child reply posts
+            parent_post.key().as_ref(),
+            // the current `reply_count` is intentionally used here
+            parent_post.reply_count.to_string().as_bytes(),
         ],
         bump,
     )]
@@ -70,9 +74,19 @@ pub fn process_create_reply(
         metadata_uri: metadata_uri,
         parent_post: Some(ctx.accounts.parent_post.key()),
         reply_count: 0,
+        /// reply post addresses are derived from the parent post's reply
+        /// counter vice the post group's counter
+        post_id: ctx.accounts.parent_post.reply_count,
     });
 
-    // increment the parent post's `reply_counter`
+    /*
+     * increment the parent post's reply counter
+     *
+     * note: we increment the post counter after the `reply.post_id` has been
+     * updated to ensure we do not skip over any counts
+     * e.g. the first reply's post_id should be 0 but if we increment it
+     * before storing the post_id, it would be 1
+     */
     ctx.accounts.parent_post.reply_count += 1;
     // todo: safe math
 

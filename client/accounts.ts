@@ -4,6 +4,7 @@
 
 import * as anchor from "@coral-xyz/anchor";
 import type { Program } from "@coral-xyz/anchor";
+import type { PublicKey } from "@solana/web3.js";
 import type { Social } from "../target/types/social";
 
 /**
@@ -37,12 +38,13 @@ export function derivePostGroupAddress(random_seed: Uint8Array) {
 /**
  * Derive a Post's PDA address
  */
-export function derivePostAddress(random_seeds: Uint8Array) {
+export function derivePostAddress(group: PublicKey, post_id: number) {
   return anchor.web3.PublicKey.findProgramAddressSync(
     [
       // comment for better diffs
       Buffer.from("post", "utf8"),
-      random_seeds,
+      group.toBytes(),
+      Buffer.from(post_id.toString(), "utf-8"),
     ],
     anchor.workspace.Social.programId,
   );

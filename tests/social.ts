@@ -30,12 +30,13 @@ const random_seed_postGroup = anchor.web3.Keypair.generate().publicKey.toBytes()
 const [profilePda] = deriveProfileAddress(random_seed_profile);
 const [profilePda2] = deriveProfileAddress(random_seed_profile2);
 
-// derive the pda address based on the random
-const [postPda] = derivePostAddress(random_seed_post);
-const [replyPda] = derivePostAddress(random_seed_reply);
-
 //
 const [postGroupPda] = derivePostGroupAddress(random_seed_postGroup);
+
+// derive the pda address based on the random
+const [postPda] = derivePostAddress(postGroupPda, 0);
+const [replyPda] = derivePostAddress(postPda, 0);
+// todo: get the `post_id` values dynamically from the on-chain accounts
 
 describe("profile", () => {
   //
@@ -351,12 +352,14 @@ describe("post", () => {
 
     try {
       await program.methods
-        .updatePost(random_seed_post as unknown as number[], metadataUri)
+        .updatePost(metadataUri)
         .accounts({
           // note: when not provided, Anchor should auto-magically set this to the fee payer
           authority: wrongAuthority.publicKey,
           author: profilePda,
           post: postPda,
+          // a root post uses the post group as the group
+          group: postGroupPda,
         })
         .signers([wrongAuthority])
         .rpc();
@@ -381,12 +384,14 @@ describe("post", () => {
     const metadataUri = "winning metadataUri";
 
     await program.methods
-      .updatePost(random_seed_post as unknown as number[], metadataUri)
+      .updatePost(metadataUri)
       .accounts({
         // note: when not provided, Anchor should auto-magically set this to the fee payer
         // authority: payer.publicKey,
         author: profilePda,
         post: postPda,
+        // a root post uses the post group as the group
+        group: postGroupPda,
       })
       .rpc();
 
@@ -441,12 +446,14 @@ describe("post", () => {
     const metadataUri = "new reply metadataUri";
 
     await program.methods
-      .updatePost(random_seed_reply as unknown as number[], metadataUri)
+      .updatePost(metadataUri)
       .accounts({
         // note: when not provided, Anchor should auto-magically set this to the fee payer
         // authority: payer.publicKey,
         author: profilePda,
         post: replyPda,
+        // a reply post uses the parent post as the group
+        group: postPda,
       })
       .rpc();
 

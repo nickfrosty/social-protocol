@@ -48,11 +48,7 @@ pub mod social {
     ) -> Result<()> {
         process_create_reply(ctx, random_seed, metadata_uri)
     }
-    pub fn update_post(
-        ctx: Context<UpdatePost>,
-        random_seed: [u8; 32],
-        metadata_uri: String,
-    ) -> Result<()> {
-        process_update_post(ctx, random_seed, metadata_uri)
+    pub fn update_post(ctx: Context<UpdatePost>, metadata_uri: String) -> Result<()> {
+        process_update_post(ctx, metadata_uri)
     }
 }
