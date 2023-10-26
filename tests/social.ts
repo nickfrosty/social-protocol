@@ -336,6 +336,10 @@ describe("post", () => {
       "Expected 'author' to be the 'profilePda'",
     );
     assert(post.metadataUri === metadataUri, "Expected 'metadataUri' to match");
+    assert(
+      post.group.toBase58() === postGroupPda.toBase58(),
+      "Expected 'group' to be 'postGroupPda'",
+    );
   });
 
   //
@@ -425,6 +429,10 @@ describe("post", () => {
       "Expected parent post to be 'postPda'",
     );
     assert(post.replyCount === 1, "Expected 'reply_count' to increment");
+    assert(
+      reply.group.toBase58() === post.group.toBase58(),
+      "Expected the reply's 'group' to match the parent post",
+    );
   });
 
   //
