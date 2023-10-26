@@ -11,6 +11,12 @@ pub struct Post {
     /// random seed bytes used to derive the PDA for the Post's account
     pub random_seed: [u8; 32],
 
+    /// post id for deriving the Post's address
+    /// 
+    /// - for "root posts" -  the current `group.post_count` is used then incremented
+    /// - for "reply posts" - the current `parent_post.reply_count` is used the incremented
+    pub post_id: u32,
+
     /// address of the PostGroup this post was published to
     pub group: Pubkey,
 
