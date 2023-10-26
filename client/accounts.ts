@@ -21,6 +21,21 @@ export function deriveProfileAddress(random_seeds: Uint8Array) {
 }
 
 /**
+ * Derive a PostGroup's PDA address
+ */
+export function derivePostGroupAddress(name: string) {
+  return anchor.web3.PublicKey.findProgramAddressSync(
+    [
+      // comment for better diffs
+      Buffer.from("post_group", "utf8"),
+      Buffer.from(name, "utf8"),
+      ,
+    ],
+    anchor.workspace.Social.programId,
+  );
+}
+
+/**
  * Derive a Post's PDA address
  */
 export function derivePostAddress(random_seeds: Uint8Array) {
