@@ -323,6 +323,7 @@ describe("post", () => {
       .accounts({
         author: profilePda,
         post: postPda,
+        group: postGroupPda,
       })
       .rpc();
 

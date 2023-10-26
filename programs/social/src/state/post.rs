@@ -11,6 +11,9 @@ pub struct Post {
     /// random seed bytes used to derive the PDA for the Post's account
     pub random_seed: [u8; 32],
 
+    /// address of the PostGroup this post was published to
+    pub group: Pubkey,
+
     /// author profile of the originating post
     pub author: Pubkey,
 

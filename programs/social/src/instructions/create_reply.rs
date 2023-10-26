@@ -65,8 +65,9 @@ pub fn process_create_reply(
     ctx.accounts.reply.set_inner(Post {
         bump: ctx.bumps.reply,
         random_seed,
-        metadata_uri: metadata_uri,
+        group: ctx.accounts.parent_post.group.key(),
         author: ctx.accounts.author.key(),
+        metadata_uri: metadata_uri,
         parent_post: Some(ctx.accounts.parent_post.key()),
         reply_count: 0,
     });

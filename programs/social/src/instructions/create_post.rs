@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::errors::GenericError;
-use crate::state::{Post, Profile};
+use crate::state::{Post, PostGroup, Profile};
 
 #[derive(Accounts)]
 #[instruction(random_seed: [u8; 32], metadata_uri: String)]
@@ -37,6 +37,18 @@ pub struct CreatePost<'info> {
         bump,
     )]
     pub post: Account<'info, Post>,
+
+    #[account(
+        mut,
+        seeds = [
+            PostGroup::PREFIX_SEED.as_ref(),
+            group.random_seed.as_ref()
+        ],
+        bump,
+        // ensure the post group is owned by the author PDA
+        constraint = group.authority.key() == author.key() @ GenericError::Unauthorized,
+    )]
+    pub group: Account<'info, PostGroup>,
 }
 
 /// Create a root Post that is published by the `author` (aka `Profile`)
@@ -52,8 +64,9 @@ pub fn process_create_post(
     ctx.accounts.post.set_inner(Post {
         bump: ctx.bumps.post,
         random_seed,
-        metadata_uri,
+        group: ctx.accounts.group.key(),
         author: ctx.accounts.author.key(),
+        metadata_uri,
         // no replies to start :)
         reply_count: 0,
         // parent post is set to None when creating root a Post
