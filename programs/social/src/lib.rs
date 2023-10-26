@@ -27,12 +27,8 @@ pub mod social {
     ) -> Result<()> {
         process_change_username(ctx, random_seed, new_username)
     }
-    pub fn create_post(
-        ctx: Context<CreatePost>,
-        random_seed: [u8; 32],
-        metadata_uri: String,
-    ) -> Result<()> {
-        process_create_post(ctx, random_seed, metadata_uri)
+    pub fn create_post(ctx: Context<CreatePost>, metadata_uri: String) -> Result<()> {
+        process_create_post(ctx, metadata_uri)
     }
     pub fn create_post_group(
         ctx: Context<CreatePostGroup>,
@@ -41,12 +37,8 @@ pub mod social {
     ) -> Result<()> {
         process_create_post_group(ctx, random_seed, name)
     }
-    pub fn create_reply(
-        ctx: Context<CreateReply>,
-        random_seed: [u8; 32],
-        metadata_uri: String,
-    ) -> Result<()> {
-        process_create_reply(ctx, random_seed, metadata_uri)
+    pub fn create_reply(ctx: Context<CreateReply>, metadata_uri: String) -> Result<()> {
+        process_create_reply(ctx, metadata_uri)
     }
     pub fn update_post(ctx: Context<UpdatePost>, metadata_uri: String) -> Result<()> {
         process_update_post(ctx, metadata_uri)

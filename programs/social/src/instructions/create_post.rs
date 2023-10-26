@@ -4,7 +4,7 @@ use crate::errors::GenericError;
 use crate::state::{Post, PostGroup, Profile};
 
 #[derive(Accounts)]
-#[instruction(random_seed: [u8; 32], metadata_uri: String)]
+#[instruction(metadata_uri: String)]
 pub struct CreatePost<'info> {
     pub system_program: Program<'info, System>,
 
@@ -56,7 +56,6 @@ pub struct CreatePost<'info> {
 /// Create a root Post that is published by the `author` (aka `Profile`)
 pub fn process_create_post(
     ctx: Context<CreatePost>,
-    random_seed: [u8; 32],
     metadata_uri: String,
 ) -> Result<()> {
     // validate the input
@@ -65,7 +64,6 @@ pub fn process_create_post(
     // actually store the provided data in the account
     ctx.accounts.post.set_inner(Post {
         bump: ctx.bumps.post,
-        random_seed,
         group: ctx.accounts.group.key(),
         // we are intentionally using the current `post_count` vice the next value
         // this ensures we do not skip any index numbers

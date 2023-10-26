@@ -4,7 +4,7 @@ use crate::errors::GenericError;
 use crate::state::{Post, Profile};
 
 #[derive(Accounts)]
-#[instruction(random_seed: [u8; 32], metadata_uri: String)]
+#[instruction(metadata_uri: String)]
 pub struct CreateReply<'info> {
     pub system_program: Program<'info, System>,
 
@@ -54,11 +54,7 @@ pub struct CreateReply<'info> {
 }
 
 /// Create a reply Post to an existing Post
-pub fn process_create_reply(
-    ctx: Context<CreateReply>,
-    random_seed: [u8; 32],
-    metadata_uri: String,
-) -> Result<()> {
+pub fn process_create_reply(ctx: Context<CreateReply>, metadata_uri: String) -> Result<()> {
     // validate the input
     Post::validate_uri(&metadata_uri)?;
 
@@ -68,7 +64,6 @@ pub fn process_create_reply(
     // actually store the provided data in the account
     ctx.accounts.reply.set_inner(Post {
         bump: ctx.bumps.reply,
-        random_seed,
         group: ctx.accounts.parent_post.group.key(),
         author: ctx.accounts.author.key(),
         metadata_uri: metadata_uri,

@@ -21,16 +21,10 @@ const payer = provider.wallet;
 
 // init the random seed bytes to use
 const random_seed_profile = anchor.web3.Keypair.generate().publicKey.toBytes();
-const random_seed_profile2 = anchor.web3.Keypair.generate().publicKey.toBytes();
-const random_seed_post = anchor.web3.Keypair.generate().publicKey.toBytes();
-const random_seed_reply = anchor.web3.Keypair.generate().publicKey.toBytes();
 const random_seed_postGroup = anchor.web3.Keypair.generate().publicKey.toBytes();
 
 // derive the pda address based on the random
 const [profilePda] = deriveProfileAddress(random_seed_profile);
-const [profilePda2] = deriveProfileAddress(random_seed_profile2);
-
-//
 const [postGroupPda] = derivePostGroupAddress(random_seed_postGroup);
 
 // derive the pda address based on the random
@@ -320,7 +314,7 @@ describe("post", () => {
     const metadataUri = "metadataUri_default";
 
     await program.methods
-      .createPost(random_seed_post as unknown as number[], metadataUri)
+      .createPost(metadataUri)
       .accounts({
         author: profilePda,
         post: postPda,
@@ -411,7 +405,7 @@ describe("post", () => {
     const metadataUri = "reply_metadataUri";
 
     await program.methods
-      .createReply(random_seed_reply as unknown as number[], metadataUri)
+      .createReply(metadataUri)
       .accounts({
         author: profilePda,
         parentPost: postPda,
