@@ -7,6 +7,7 @@ import chaiAsPromised from "chai-as-promised";
 import {
   deriveNameServiceAddress,
   derivePostAddress,
+  derivePostGroupAddress,
   deriveProfileAddress,
 } from "../client/accounts";
 
@@ -31,6 +32,10 @@ const [profilePda2] = deriveProfileAddress(random_seed_profile2);
 // derive the pda address based on the random
 const [postPda] = derivePostAddress(random_seed_post);
 const [replyPda] = derivePostAddress(random_seed_reply);
+
+//
+const postGroupName = "test";
+const [postGroupPda] = derivePostGroupAddress(postGroupName);
 
 describe("profile", () => {
   //
@@ -75,7 +80,7 @@ describe("profile", () => {
   });
 
   //
-  it("profile's name service created", async () => {
+  it("create profile name service", async () => {
     // derive the profile's name service account from the profile's username
     const [nameServicePda] = deriveNameServiceAddress("profile", profileData.username);
 
@@ -86,10 +91,13 @@ describe("profile", () => {
     const profile = await program.account.profile.fetch(name_service.address);
 
     assert(
+      profile.authority.toBase58() === payer.publicKey.toBase58(),
+      "Expected 'payer' to be the profile authority",
+    );
+    assert(
       name_service.address.toBase58() === profilePda.toBase58(),
       "Expected 'address' to be the profile pda",
     );
-
     assert(
       name_service.authority.toBase58() === profilePda.toBase58(),
       "Expected 'authority' to to be the profile pda",
@@ -221,6 +229,61 @@ describe("profile", () => {
     await expect(
       program.account.nameService.fetch(oldNameServicePda),
     ).to.eventually.be.rejectedWith("Account does not exist or has no data");
+  });
+
+  // todo: changing profile authority
+  // todo: verify post authority is still correct, being the profile pda instead of the `profile.authority`
+});
+
+describe("post_group", () => {
+  const [nameServicePda] = deriveNameServiceAddress("post_group", postGroupName);
+
+  //
+  it("create post group", async () => {
+    console.log("\t", "post group address:", postGroupPda.toBase58());
+
+    await program.methods
+      .createPostGroup(postGroupName)
+      .accounts({
+        author: profilePda,
+        group: postGroupPda,
+        nameService: nameServicePda,
+      })
+      .rpc();
+
+    // get the PostGroup record from the chain
+    const group = await program.account.postGroup.fetch(postGroupPda);
+
+    // perform the assertions
+    assert(
+      group.authority.toBase58() === profilePda.toBase58(),
+      "Expected 'authority' to be the 'profilePda'",
+    );
+    assert(group.name === postGroupName, "Expected 'name' to match");
+  });
+
+  //
+  it("create name service record", async () => {
+    console.log("\t", "name service address:", nameServicePda.toBase58());
+
+    // get the name service and group from the blockchain
+    const nameService = await program.account.nameService.fetch(nameServicePda);
+    const postGroup = await program.account.postGroup.fetch(nameService.address);
+
+    const [postGroupTestPda] = derivePostGroupAddress(postGroup.name);
+    assert(
+      postGroupTestPda.toBase58() === postGroupPda.toBase58(),
+      "Expected the name service address to provide the PostGroup pda",
+    );
+
+    assert(
+      nameService.address.toBase58() === postGroupPda.toBase58(),
+      "Expected 'address' to be the PostGroup pda",
+    );
+    assert(
+      nameService.authority.toBase58() === profilePda.toBase58(),
+      "Expected 'authority' to be the 'profilePda'",
+    );
   });
 });
 
