@@ -4,7 +4,7 @@ use crate::errors::GenericError;
 use crate::state::{PostGroup, Profile, NameService};
 
 #[derive(Accounts)]
-#[instruction(input: PostGroup)]
+#[instruction(name: String)]
 pub struct CreatePostGroup<'info> {
     pub system_program: Program<'info, System>,
 
@@ -32,7 +32,7 @@ pub struct CreatePostGroup<'info> {
         space=PostGroup::SPACE,
         seeds = [
             PostGroup::PREFIX_SEED.as_ref(),
-            input.random_seed.as_ref()
+            name.as_ref()
         ],
         bump,
     )]
@@ -45,7 +45,7 @@ pub struct CreatePostGroup<'info> {
         seeds = [
             NameService::PREFIX_SEED.as_ref(),
             PostGroup::PREFIX_SEED.as_ref(),
-            input.name.as_ref()
+            name.as_ref()
         ],
         bump
     )]
@@ -55,10 +55,10 @@ pub struct CreatePostGroup<'info> {
 /// Create a PostGroup that is published by the `author` (aka `Profile`)
 pub fn process_create_post_group(
     ctx: Context<CreatePostGroup>,
-    input: PostGroup
+    name: String
 ) -> Result<()> {
     // validate the input
-    PostGroup::validate_name(&input.name)?;
+    PostGroup::validate_name(&name)?;
 
     // create the name service account for the group being created
     ctx.accounts.name_service.set_inner(NameService { 
@@ -73,8 +73,7 @@ pub fn process_create_post_group(
     // actually store the provided data in the account
     ctx.accounts.group.set_inner(PostGroup {
         bump: ctx.bumps.group,
-        random_seed: input.random_seed,
-        name: input.name,
+        name: name,
         post_count: 0,
         // the author PDA is set as the authority so that when the `author.authority` changes, 
         // the same author will still be able to update the inner data of this account

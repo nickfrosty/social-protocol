@@ -8,9 +8,6 @@ pub struct PostGroup {
     /// bump used to derive the PDA
     pub bump: u8,
 
-    /// random seed bytes used to derive the PDA for the PostGroup
-    pub random_seed: [u8; 32],
-
     /// account with authority over the PostGroup
     pub authority: Pubkey,
 
@@ -28,7 +25,7 @@ impl PostGroup {
     pub const PREFIX_SEED: &str = "post_group";
 
     /// max allowed length of the friendly name
-    pub const MAX_LEN_NAME : usize = 28;
+    pub const MAX_LEN_NAME : usize = 32;
 
     /// total on-chain space needed to allocate the account
     pub const SPACE: usize =
