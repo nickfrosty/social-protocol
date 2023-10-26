@@ -418,19 +418,26 @@ describe("post", () => {
     const reply = await program.account.post.fetch(replyPda);
 
     // perform the assertions
+
+    const [testReplyPda] = derivePostAddress(reply.parentPost, reply.postId);
+    assert(
+      replyPda.toBase58() === testReplyPda.toBase58(),
+      "Expected reply PDA to be derived from the reply's parent post and post id",
+    );
+
     assert(
       reply.author.toBase58() === profilePda.toBase58(),
       "Expected 'author' to be the 'profilePda'",
     );
     assert(reply.metadataUri === metadataUri, "Expected 'metadataUri' to match");
+    assert(post.replyCount === 1, "Expected 'reply_count' to increment");
     assert(
       reply.parentPost.toBase58() === postPda.toBase58(),
       "Expected parent post to be 'postPda'",
     );
-    assert(post.replyCount === 1, "Expected 'reply_count' to increment");
     assert(
       reply.group.toBase58() === post.group.toBase58(),
-      "Expected the reply's 'group' to match the parent post",
+      "Expected the reply 'group' to match the parent post",
     );
   });
 

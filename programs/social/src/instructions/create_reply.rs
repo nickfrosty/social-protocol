@@ -64,6 +64,8 @@ pub fn process_create_reply(ctx: Context<CreateReply>, metadata_uri: String) -> 
     // actually store the provided data in the account
     ctx.accounts.reply.set_inner(Post {
         bump: ctx.bumps.reply,
+        // even though a reply post's address is derived from the `parent_post`,
+        // we still track the parent's group for easy access
         group: ctx.accounts.parent_post.group.key(),
         author: ctx.accounts.author.key(),
         metadata_uri: metadata_uri,
