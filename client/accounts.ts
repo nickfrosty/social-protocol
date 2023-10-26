@@ -51,13 +51,13 @@ export function derivePostAddress(random_seeds: Uint8Array) {
 type NameSpaceValue = "profile" | "post" | "post_group";
 
 /**
- * Derive a NameService's PDA address
+ * Derive a LookupAccount's PDA address
  */
-export function deriveNameServiceAddress(namespace: NameSpaceValue, key: string) {
+export function deriveLookupAccountAddress(namespace: NameSpaceValue, key: string) {
   return anchor.web3.PublicKey.findProgramAddressSync(
     [
       // comment for better diffs
-      Buffer.from("name_service", "utf8"),
+      Buffer.from("lookup", "utf8"),
       Buffer.from(namespace, "utf8"),
       Buffer.from(key, "utf8"),
     ],

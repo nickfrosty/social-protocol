@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::errors::GenericError;
-use crate::state:: { Profile, NameService } ;
+use crate::state:: { Profile, LookupAccount } ;
 
 #[derive(Accounts)]
 #[instruction(profile_seed: [u8;32], new_username: String)]
@@ -29,42 +29,42 @@ pub struct ChangeUsername<'info> {
     #[account(
         init, 
         payer = payer,
-        space = NameService::SPACE,
+        space = LookupAccount::SPACE,
         seeds = [
-            NameService::PREFIX_SEED.as_ref(),
+            LookupAccount::PREFIX_SEED.as_ref(),
             Profile::PREFIX_SEED.as_ref(),
-            // use the new username to derive the new name service account
+            // use the new username to derive the new lookup account
             new_username.as_ref()
         ],
         bump,
     )]
-    pub new_name_service: Account<'info, NameService>,
+    pub new_lookup_account: Account<'info, LookupAccount>,
 
     #[account(
         mut,
-        // when closing the old name service, send the lamports to the new name service
+        // when closing the old lookup account, send the lamports to the new lookup account
         // this makes changing usernames a negligible cost
-        close = new_name_service,
+        close = new_lookup_account,
         seeds = [
-            NameService::PREFIX_SEED.as_ref(),
+            LookupAccount::PREFIX_SEED.as_ref(),
             Profile::PREFIX_SEED.as_ref(),
-            // use the current username to derive the old name service address
+            // use the current username to derive the old lookup account address
             profile.username.as_ref()
         ],
-        bump = old_name_service.bump,
-        // ensure the name service is owned by the profile's PDA
-        constraint = old_name_service.authority.key() == profile.key() @ GenericError::Unauthorized,
+        bump = old_lookup_account.bump,
+        // ensure the lookup account is owned by the profile's PDA
+        constraint = old_lookup_account.authority.key() == profile.key() @ GenericError::Unauthorized,
     )]
-    pub old_name_service: Account<'info, NameService>,
+    pub old_lookup_account: Account<'info, LookupAccount>,
 }
 
 ///
 pub fn process_change_username(ctx: Context<ChangeUsername>, _profile_seed: [u8; 32], new_username: String) -> Result<()> {
     Profile::validate_username(&new_username)?;
 
-    // store the new name service's account data 
-    ctx.accounts.new_name_service.set_inner(NameService {
-        bump: ctx.bumps.new_name_service,
+    // store the new lookup account's data 
+    ctx.accounts.new_lookup_account.set_inner(LookupAccount {
+        bump: ctx.bumps.new_lookup_account,
         // store the profile's address for easy retrieval by anyone
         address: ctx.accounts.profile.key(),
         // the profile PDA is set as the authority so that when the `profile.authority` changes, 

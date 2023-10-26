@@ -5,7 +5,7 @@ import type { Social } from "../target/types/social";
 import chai, { expect, assert } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {
-  deriveNameServiceAddress,
+  deriveLookupAccountAddress,
   derivePostAddress,
   derivePostGroupAddress,
   deriveProfileAddress,
@@ -53,7 +53,7 @@ describe("profile", () => {
   it("create profile", async () => {
     console.log("\t", "profile address:", profilePda.toBase58());
 
-    const [nameServicePda] = deriveNameServiceAddress("profile", profileData.username);
+    const [lookupAccountPda] = deriveLookupAccountAddress("profile", profileData.username);
 
     await program.methods
       .createProfile(profileData)
@@ -61,14 +61,14 @@ describe("profile", () => {
         // payer: payer.publicKey,
         authority: payer.publicKey,
         profile: profilePda,
-        nameService: nameServicePda,
+        lookupAccount: lookupAccountPda,
       })
       .rpc();
 
     // get the profile record from the chain
     const profile = await program.account.profile.fetch(profilePda);
 
-    // note: the name service checks for profile creation are next
+    // note: the lookup account checks for profile creation are next
 
     // perform the assertions on the profile
     assert(
@@ -82,21 +82,21 @@ describe("profile", () => {
   });
 
   //
-  it("create profile name service", async () => {
-    // derive the profile's name service account from the profile's username
-    const [nameServicePda] = deriveNameServiceAddress("profile", profileData.username);
+  it("create profile lookup account", async () => {
+    // derive the profile's lookup account from the profile's username
+    const [lookupAccountPda] = deriveLookupAccountAddress("profile", profileData.username);
 
-    console.log("\t", "name service address:", nameServicePda.toBase58());
+    console.log("\t", "lookup account address:", lookupAccountPda.toBase58());
 
-    // get the name service and profile from the blockchain
-    const name_service = await program.account.nameService.fetch(nameServicePda);
-    const updatedProfile = await program.account.profile.fetch(name_service.address);
+    // get the lookup account and profile from the blockchain
+    const lookup_account = await program.account.lookupAccount.fetch(lookupAccountPda);
+    const updatedProfile = await program.account.profile.fetch(lookup_account.address);
 
-    // ensure the name service record points to the correct record address
-    const [nameServiceTestPda] = deriveNameServiceAddress("profile", updatedProfile.username);
+    // ensure the lookup account points to the correct address
+    const [lookupAccountTestPda] = deriveLookupAccountAddress("profile", updatedProfile.username);
     assert(
-      nameServicePda.toBase58() === nameServiceTestPda.toBase58(),
-      "Expected the 'nameServicePda' to be derived from the 'updatedProfile.username'",
+      lookupAccountPda.toBase58() === lookupAccountTestPda.toBase58(),
+      "Expected the 'lookupAccountPda' to be derived from the 'updatedProfile.username'",
     );
 
     assert(
@@ -104,11 +104,11 @@ describe("profile", () => {
       "Expected 'payer' to be the profile authority",
     );
     assert(
-      name_service.address.toBase58() === profilePda.toBase58(),
+      lookup_account.address.toBase58() === profilePda.toBase58(),
       "Expected 'address' to be the profile pda",
     );
     assert(
-      name_service.authority.toBase58() === profilePda.toBase58(),
+      lookup_account.authority.toBase58() === profilePda.toBase58(),
       "Expected 'authority' to to be the profile pda",
     );
   });
@@ -179,9 +179,9 @@ describe("profile", () => {
     // define the new username
     const new_username = "brand_new_not_taken";
 
-    // derive the profile's name service account from the profile's username
-    const [oldNameServicePda] = deriveNameServiceAddress("profile", profileData.username);
-    const [newNameServicePda] = deriveNameServiceAddress("profile", new_username);
+    // derive the profile's lookup account from the profile's username
+    const [oldLookupAccountPda] = deriveLookupAccountAddress("profile", profileData.username);
+    const [newLookupAccountPda] = deriveLookupAccountAddress("profile", new_username);
 
     const wrongAuthority = anchor.web3.Keypair.generate();
 
@@ -192,8 +192,8 @@ describe("profile", () => {
           // note: when not provided, Anchor should auto-magically set this to the fee payer
           authority: wrongAuthority.publicKey,
           profile: profilePda,
-          oldNameService: oldNameServicePda,
-          newNameService: newNameServicePda,
+          oldLookupAccount: oldLookupAccountPda,
+          newLookupAccount: newLookupAccountPda,
         })
         .signers([wrongAuthority])
         .rpc(),
@@ -207,12 +207,12 @@ describe("profile", () => {
     // set a new usernames
     const new_username = "brand_new_not_taken";
 
-    // derive the profile's name service account from the profile's username
+    // derive the profile's lookup account from the profile's username
 
-    const [oldNameServicePda] = deriveNameServiceAddress("profile", profileData.username);
-    const [newNameServicePda] = deriveNameServiceAddress("profile", new_username);
+    const [oldLookupAccountPda] = deriveLookupAccountAddress("profile", profileData.username);
+    const [newLookupAccountPda] = deriveLookupAccountAddress("profile", new_username);
 
-    console.log("\t", "new name service address:", newNameServicePda.toBase58());
+    console.log("\t", "new lookup account address:", newLookupAccountPda.toBase58());
 
     await program.methods
       .changeUsername(random_seed_profile as unknown as number[], new_username)
@@ -220,31 +220,31 @@ describe("profile", () => {
         // note: when not provided, Anchor should auto-magically set this to the fee payer
         // authority: payer.publicKey,
         profile: profilePda,
-        oldNameService: oldNameServicePda,
-        newNameService: newNameServicePda,
+        oldLookupAccount: oldLookupAccountPda,
+        newLookupAccount: newLookupAccountPda,
       })
       .rpc();
 
     // get the updated profile record from the chain
-    const new_name_service = await program.account.nameService.fetch(newNameServicePda);
-    const updatedProfile = await program.account.profile.fetch(new_name_service.address);
+    const new_lookup_account = await program.account.lookupAccount.fetch(newLookupAccountPda);
+    const updatedProfile = await program.account.profile.fetch(new_lookup_account.address);
 
-    // ensure the update name service record points to the correct record address
-    const [nameServiceTestPda] = deriveNameServiceAddress("profile", updatedProfile.username);
+    // ensure the update lookup account points to the correct record address
+    const [lookupAccountTestPda] = deriveLookupAccountAddress("profile", updatedProfile.username);
     assert(
-      newNameServicePda.toBase58() === nameServiceTestPda.toBase58(),
-      "Expected the 'newNameServicePda' to be derived from the new 'updatedProfile.username'",
+      newLookupAccountPda.toBase58() === lookupAccountTestPda.toBase58(),
+      "Expected the 'newLookupAccountPda' to be derived from the new 'updatedProfile.username'",
     );
 
-    // ensure the new name service has the correct data
+    // ensure the new lookup account has the correct data
     assert(
-      new_name_service.address.toBase58() === profilePda.toBase58(),
+      new_lookup_account.address.toBase58() === profilePda.toBase58(),
       "Expected 'address' to be the profile pda",
     );
 
-    // ensure the old name service account was closed
+    // ensure the old lookup account was closed
     await expect(
-      program.account.nameService.fetch(oldNameServicePda),
+      program.account.lookupAccount.fetch(oldLookupAccountPda),
     ).to.eventually.be.rejectedWith("Account does not exist or has no data");
   });
 
@@ -254,7 +254,7 @@ describe("profile", () => {
 
 describe("post_group", () => {
   const postGroupName = "test";
-  const [nameServicePda] = deriveNameServiceAddress("post_group", postGroupName);
+  const [lookupAccountPda] = deriveLookupAccountAddress("post_group", postGroupName);
 
   //
   it("create post group", async () => {
@@ -265,14 +265,14 @@ describe("post_group", () => {
       .accounts({
         author: profilePda,
         group: postGroupPda,
-        nameService: nameServicePda,
+        lookupAccount: lookupAccountPda,
       })
       .rpc();
 
     // get the PostGroup record from the chain
     const group = await program.account.postGroup.fetch(postGroupPda);
 
-    // note: checks for the post group name service are performed next
+    // note: checks for the post group lookup account are performed next
 
     assert(
       group.authority.toBase58() === profilePda.toBase58(),
@@ -282,30 +282,30 @@ describe("post_group", () => {
   });
 
   //
-  it("create name service record", async () => {
-    console.log("\t", "name service address:", nameServicePda.toBase58());
+  it("create lookup account record", async () => {
+    console.log("\t", "lookup account address:", lookupAccountPda.toBase58());
 
-    // get the name service and group from the blockchain
-    const nameService = await program.account.nameService.fetch(nameServicePda);
-    const postGroup = await program.account.postGroup.fetch(nameService.address);
+    // get the lookup account and group from the blockchain
+    const lookupAccount = await program.account.lookupAccount.fetch(lookupAccountPda);
+    const postGroup = await program.account.postGroup.fetch(lookupAccount.address);
 
-    // ensure the name service record points to the correct record address
-    const [nameServiceTestPda] = deriveNameServiceAddress("post_group", postGroup.name);
+    // ensure the lookup account points to the correct record address
+    const [lookupAccountTestPda] = deriveLookupAccountAddress("post_group", postGroup.name);
     assert(
-      nameServiceTestPda.toBase58() === nameServicePda.toBase58(),
-      "Expected the 'nameServicePda' to be derived from the 'postGroup.name'",
+      lookupAccountTestPda.toBase58() === lookupAccountPda.toBase58(),
+      "Expected the 'lookupAccountPda' to be derived from the 'postGroup.name'",
     );
 
     assert(
-      nameService.address.toBase58() === postGroupPda.toBase58(),
+      lookupAccount.address.toBase58() === postGroupPda.toBase58(),
       "Expected 'address' to be the 'postGroupPda'",
     );
     assert(
-      nameService.address.toBase58() === postGroupPda.toBase58(),
+      lookupAccount.address.toBase58() === postGroupPda.toBase58(),
       "Expected 'address' to be the 'postGroupPda'",
     );
     assert(
-      nameService.authority.toBase58() === profilePda.toBase58(),
+      lookupAccount.authority.toBase58() === profilePda.toBase58(),
       "Expected 'authority' to be the 'profilePda'",
     );
   });

@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::errors::GenericError;
-use crate::state::{PostGroup, Profile, NameService};
+use crate::state::{PostGroup, Profile, LookupAccount};
 
 #[derive(Accounts)]
 #[instruction(random_seed: [u8; 32], name: String)]
@@ -41,15 +41,15 @@ pub struct CreatePostGroup<'info> {
     #[account(
         init,
         payer = payer,
-        space = NameService::SPACE,
+        space = LookupAccount::SPACE,
         seeds = [
-            NameService::PREFIX_SEED.as_ref(),
+            LookupAccount::PREFIX_SEED.as_ref(),
             PostGroup::PREFIX_SEED.as_ref(),
             name.as_ref()
         ],
         bump
     )]
-    pub name_service: Account<'info, NameService>
+    pub lookup_account: Account<'info, LookupAccount>
 }
 
 /// Create a PostGroup that is published by the `author` (aka `Profile`)
@@ -61,9 +61,9 @@ pub fn process_create_post_group(
     // validate the input
     PostGroup::validate_name(&name)?;
 
-    // create the name service account for the group being created
-    ctx.accounts.name_service.set_inner(NameService { 
-        bump: ctx.bumps.name_service,
+    // create the lookup account for the group being created
+    ctx.accounts.lookup_account.set_inner(LookupAccount { 
+        bump: ctx.bumps.lookup_account,
         // store the group's address for easy retrieval by anyone
         address: ctx.accounts.group.key(),
         // the author PDA is set as the authority so that when the `author.authority` changes, 

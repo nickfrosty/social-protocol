@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::state:: { Profile, NameService } ;
+use crate::state:: { Profile, LookupAccount };
 
 #[derive(Accounts)]
 #[instruction(input: Profile)]
@@ -27,24 +27,24 @@ pub struct CreateProfile<'info> {
     #[account(
         init, 
         payer = payer,
-        space = NameService::SPACE,
+        space = LookupAccount::SPACE,
         seeds = [
-            NameService::PREFIX_SEED.as_ref(),
+            LookupAccount::PREFIX_SEED.as_ref(),
             Profile::PREFIX_SEED.as_ref(),
             input.username.as_ref()
         ],
         bump
     )]
-    pub name_service: Account<'info, NameService>,
+    pub lookup_account: Account<'info, LookupAccount>,
 }
 
 ///
 pub fn process_create_profile(ctx: Context<CreateProfile>, input: Profile) -> Result<()> {
     Profile::validate_input(&input)?;
     
-    // store the new name service's account data 
-    ctx.accounts.name_service.set_inner(NameService { 
-        bump: ctx.bumps.name_service,
+    // store the new lookup account's data 
+    ctx.accounts.lookup_account.set_inner(LookupAccount { 
+        bump: ctx.bumps.lookup_account,
         // store the profile's address for easy retrieval by anyone
         address: ctx.accounts.profile.key(),
         // the profile PDA is set as the authority so that when the `profile.authority` changes, 
