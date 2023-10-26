@@ -68,6 +68,8 @@ describe("profile", () => {
     // get the profile record from the chain
     const profile = await program.account.profile.fetch(profilePda);
 
+    // note: the name service checks for profile creation are next
+
     // perform the assertions on the profile
     assert(
       profile.authority.toBase58() === payer.publicKey.toBase58(),
@@ -88,10 +90,17 @@ describe("profile", () => {
 
     // get the name service and profile from the blockchain
     const name_service = await program.account.nameService.fetch(nameServicePda);
-    const profile = await program.account.profile.fetch(name_service.address);
+    const updatedProfile = await program.account.profile.fetch(name_service.address);
+
+    // ensure the name service record points to the correct record address
+    const [nameServiceTestPda] = deriveNameServiceAddress("profile", updatedProfile.username);
+    assert(
+      nameServicePda.toBase58() === nameServiceTestPda.toBase58(),
+      "Expected the 'nameServicePda' to be derived from the 'updatedProfile.username'",
+    );
 
     assert(
-      profile.authority.toBase58() === payer.publicKey.toBase58(),
+      updatedProfile.authority.toBase58() === payer.publicKey.toBase58(),
       "Expected 'payer' to be the profile authority",
     );
     assert(
@@ -218,6 +227,14 @@ describe("profile", () => {
 
     // get the updated profile record from the chain
     const new_name_service = await program.account.nameService.fetch(newNameServicePda);
+    const updatedProfile = await program.account.profile.fetch(new_name_service.address);
+
+    // ensure the update name service record points to the correct record address
+    const [nameServiceTestPda] = deriveNameServiceAddress("profile", updatedProfile.username);
+    assert(
+      newNameServicePda.toBase58() === nameServiceTestPda.toBase58(),
+      "Expected the 'newNameServicePda' to be derived from the new 'updatedProfile.username'",
+    );
 
     // ensure the new name service has the correct data
     assert(
@@ -255,7 +272,8 @@ describe("post_group", () => {
     // get the PostGroup record from the chain
     const group = await program.account.postGroup.fetch(postGroupPda);
 
-    // perform the assertions
+    // note: checks for the post group name service are performed next
+
     assert(
       group.authority.toBase58() === profilePda.toBase58(),
       "Expected 'authority' to be the 'profilePda'",
@@ -271,6 +289,7 @@ describe("post_group", () => {
     const nameService = await program.account.nameService.fetch(nameServicePda);
     const postGroup = await program.account.postGroup.fetch(nameService.address);
 
+    // ensure the name service record points to the correct record address
     const [nameServiceTestPda] = deriveNameServiceAddress("post_group", postGroup.name);
     assert(
       nameServiceTestPda.toBase58() === nameServicePda.toBase58(),
@@ -279,11 +298,11 @@ describe("post_group", () => {
 
     assert(
       nameService.address.toBase58() === postGroupPda.toBase58(),
-      "Expected 'address' to be the PostGroup pda",
+      "Expected 'address' to be the 'postGroupPda'",
     );
     assert(
       nameService.address.toBase58() === postGroupPda.toBase58(),
-      "Expected 'address' to be the PostGroup pda",
+      "Expected 'address' to be the 'postGroupPda'",
     );
     assert(
       nameService.authority.toBase58() === profilePda.toBase58(),
