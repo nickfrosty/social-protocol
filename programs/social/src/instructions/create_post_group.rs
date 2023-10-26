@@ -4,7 +4,7 @@ use crate::errors::GenericError;
 use crate::state::{PostGroup, Profile, NameService};
 
 #[derive(Accounts)]
-#[instruction(name: String)]
+#[instruction(random_seed: [u8; 32], name: String)]
 pub struct CreatePostGroup<'info> {
     pub system_program: Program<'info, System>,
 
@@ -32,7 +32,7 @@ pub struct CreatePostGroup<'info> {
         space=PostGroup::SPACE,
         seeds = [
             PostGroup::PREFIX_SEED.as_ref(),
-            name.as_ref()
+            random_seed.as_ref()
         ],
         bump,
     )]
@@ -55,6 +55,7 @@ pub struct CreatePostGroup<'info> {
 /// Create a PostGroup that is published by the `author` (aka `Profile`)
 pub fn process_create_post_group(
     ctx: Context<CreatePostGroup>,
+    random_seed: [u8;32],
     name: String
 ) -> Result<()> {
     // validate the input
@@ -73,6 +74,7 @@ pub fn process_create_post_group(
     // actually store the provided data in the account
     ctx.accounts.group.set_inner(PostGroup {
         bump: ctx.bumps.group,
+        random_seed: random_seed,
         name: name,
         post_count: 0,
         // the author PDA is set as the authority so that when the `author.authority` changes, 

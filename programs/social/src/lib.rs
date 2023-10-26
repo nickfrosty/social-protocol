@@ -34,8 +34,12 @@ pub mod social {
     ) -> Result<()> {
         process_create_post(ctx, random_seed, metadata_uri)
     }
-    pub fn create_post_group(ctx: Context<CreatePostGroup>, name: String) -> Result<()> {
-        process_create_post_group(ctx, name)
+    pub fn create_post_group(
+        ctx: Context<CreatePostGroup>,
+        random_seed: [u8; 32],
+        name: String,
+    ) -> Result<()> {
+        process_create_post_group(ctx, random_seed, name)
     }
     pub fn create_reply(
         ctx: Context<CreateReply>,

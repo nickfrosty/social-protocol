@@ -7,6 +7,9 @@ use crate::errors::GenericError;
 pub struct PostGroup {
     /// bump used to derive the PDA
     pub bump: u8,
+    
+    /// random seed bytes used to derive the PDA for the PostGroup's account
+    pub random_seed: [u8; 32],
 
     /// account with authority over the PostGroup
     pub authority: Pubkey,
