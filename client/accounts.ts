@@ -23,13 +23,12 @@ export function deriveProfileAddress(random_seeds: Uint8Array) {
 /**
  * Derive a PostGroup's PDA address
  */
-export function derivePostGroupAddress(name: string) {
+export function derivePostGroupAddress(random_seed: Uint8Array) {
   return anchor.web3.PublicKey.findProgramAddressSync(
     [
       // comment for better diffs
       Buffer.from("post_group", "utf8"),
-      Buffer.from(name, "utf8"),
-      ,
+      random_seed,
     ],
     anchor.workspace.Social.programId,
   );

@@ -24,6 +24,7 @@ const random_seed_profile = anchor.web3.Keypair.generate().publicKey.toBytes();
 const random_seed_profile2 = anchor.web3.Keypair.generate().publicKey.toBytes();
 const random_seed_post = anchor.web3.Keypair.generate().publicKey.toBytes();
 const random_seed_reply = anchor.web3.Keypair.generate().publicKey.toBytes();
+const random_seed_postGroup = anchor.web3.Keypair.generate().publicKey.toBytes();
 
 // derive the pda address based on the random
 const [profilePda] = deriveProfileAddress(random_seed_profile);
@@ -34,8 +35,7 @@ const [postPda] = derivePostAddress(random_seed_post);
 const [replyPda] = derivePostAddress(random_seed_reply);
 
 //
-const postGroupName = "test";
-const [postGroupPda] = derivePostGroupAddress(postGroupName);
+const [postGroupPda] = derivePostGroupAddress(random_seed_postGroup);
 
 describe("profile", () => {
   //
@@ -236,6 +236,7 @@ describe("profile", () => {
 });
 
 describe("post_group", () => {
+  const postGroupName = "test";
   const [nameServicePda] = deriveNameServiceAddress("post_group", postGroupName);
 
   //
@@ -243,7 +244,7 @@ describe("post_group", () => {
     console.log("\t", "post group address:", postGroupPda.toBase58());
 
     await program.methods
-      .createPostGroup(postGroupName)
+      .createPostGroup(random_seed_postGroup as unknown as number[], postGroupName)
       .accounts({
         author: profilePda,
         group: postGroupPda,
@@ -270,12 +271,16 @@ describe("post_group", () => {
     const nameService = await program.account.nameService.fetch(nameServicePda);
     const postGroup = await program.account.postGroup.fetch(nameService.address);
 
-    const [postGroupTestPda] = derivePostGroupAddress(postGroup.name);
+    const [nameServiceTestPda] = deriveNameServiceAddress("post_group", postGroup.name);
     assert(
-      postGroupTestPda.toBase58() === postGroupPda.toBase58(),
-      "Expected the name service address to provide the PostGroup pda",
+      nameServiceTestPda.toBase58() === nameServicePda.toBase58(),
+      "Expected the 'nameServicePda' to be derived from the 'postGroup.name'",
     );
 
+    assert(
+      nameService.address.toBase58() === postGroupPda.toBase58(),
+      "Expected 'address' to be the PostGroup pda",
+    );
     assert(
       nameService.address.toBase58() === postGroupPda.toBase58(),
       "Expected 'address' to be the PostGroup pda",
