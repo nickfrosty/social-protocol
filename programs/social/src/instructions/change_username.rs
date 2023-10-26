@@ -15,6 +15,7 @@ pub struct ChangeUsername<'info> {
     pub authority: Signer<'info>,
 
     #[account(
+        mut,
         seeds = [
             Profile::PREFIX_SEED.as_ref(),
             profile_seed.as_ref()
@@ -70,6 +71,9 @@ pub fn process_change_username(ctx: Context<ChangeUsername>, _profile_seed: [u8;
         // the same profile will still be able to update the inner data of this account
         authority: ctx.accounts.profile.key()
     });
+
+    // actually update the username
+    ctx.accounts.profile.username = new_username;
 
     // emit an event for indexers to observe
     // todo
